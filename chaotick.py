@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def logistic_equation(X, r=1):
+    return r*X*(1 - X) 
+
 # Strogatz, Nonlinear Dynamics and Chaos, pg 33-34
 # 4th order Runge Kutta numerical approximation
 def runge_kutta_4(dydx, range=(0,10), step=0.1, init_val=0.0):
@@ -19,9 +22,9 @@ def runge_kutta_4(dydx, range=(0,10), step=0.1, init_val=0.0):
 
 # code below adapted from https://medium.com/@olutosinbanjo/how-to-plot-a-direction-field-with-python-1fd022e2d8f8
 
-def gen_meshgrid(x_interval=[-3,3], y_interval=[-3,3]):
-    x = np.arange(x_interval[0], x_interval[1], (x_interval[1] - x_interval[0]) / 20.0)
-    y = np.arange(y_interval[0], y_interval[1], (y_interval[1] - y_interval[0]) / 20.0)
+def gen_meshgrid(x_interval=[-3,3], y_interval=[-3,3], n=20):
+    x = np.arange(x_interval[0], x_interval[1], (x_interval[1] - x_interval[0]) / float(n))
+    y = np.arange(y_interval[0], y_interval[1], (y_interval[1] - y_interval[0]) / float(n))
     return np.meshgrid(x, y)
 
 def gen_slopevals(X, Y, dydx):
@@ -51,3 +54,31 @@ def plot_slope_field(x_interval, y_interval, dydx, normalized=True, title="Slope
     X, Y = gen_meshgrid(x_interval, y_interval)
     dy, dx = gen_slopevals(X, Y, dydx)
     return plot_slope_field_prepped(X, Y, dx, dy, normalized=normalized, title=title, curves=curves)
+
+# code below taken from ipython cookbook
+# https://ipython-books.github.io/121-plotting-the-bifurcation-diagram-of-a-chaotic-dynamical-system/
+def plot_system(r, x0, n, ax=None):
+    # Plot the function and the
+    # y=x diagonal line.
+    t = np.linspace(0, 1)
+    ax.plot(t, logistic_equation(t, r=r), 'k', lw=2)
+    ax.plot([0, 1], [0, 1], 'k', lw=2)
+
+    # Recursively apply y=f(x) and plot two lines:
+    # (x, x) -> (x, y)
+    # (x, y) -> (y, y)
+    x = x0
+    for i in range(n):
+        y = logistic_equation(x, r)
+        # Plot the two lines.
+        ax.plot([x, x], [x, y], 'k', lw=1)
+        ax.plot([x, y], [y, y], 'k', lw=1)
+        # Plot the positions with increasing
+        # opacity.
+        ax.plot([x], [y], 'ok', ms=10,
+                alpha=(i + 1) / n)
+        x = y
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_title(f"$r={r:.1f}, \, x_0={x0:.1f}$")
