@@ -32,28 +32,29 @@ def gen_slopevals(X, Y, dydx):
     dx = np.ones(dy.shape)
     return (dy, dx)
 
-def plot_slope_field_prepped(x_ticks, y_ticks, x_vals, y_vals, normalized=True, title="Slope Field", curves=[]):
+def plot_slope_field_prepped(x_ticks, y_ticks, x_vals, y_vals, normalized=True, title="Slope Field", curves=[], ax=None):
 
     if normalized:
         x_vals = x_vals / np.sqrt(x_vals**2 + y_vals**2)
         y_vals = y_vals / np.sqrt(x_vals**2 + y_vals**2)
 
-    plot = plt.figure()
-    plt.quiver(x_ticks, y_ticks, x_vals, y_vals, 
+    if ax is None:
+        plot = plt.figure()
+        ax = plot.gca()
+
+    ax.quiver(x_ticks, y_ticks, x_vals, y_vals, 
                headlength=7,
                color='Teal')
     for x,y in curves:
-        plt.plot(x, y)
+        ax.plot(x, y)
 
-    plt.title(title)
-    plt.show(plot)
+    ax.set_title(title)
+    #plt.show(plot)
 
-    return plt
-
-def plot_slope_field(x_interval, y_interval, dydx, normalized=True, title="Slope Field", curves=[]):
-    X, Y = gen_meshgrid(x_interval, y_interval)
+def plot_slope_field(x_interval, y_interval, dydx, ticks=None, normalized=True, title="Slope Field", curves=[], ax=None):
+    X, Y = gen_meshgrid(x_interval, y_interval, ticks)
     dy, dx = gen_slopevals(X, Y, dydx)
-    return plot_slope_field_prepped(X, Y, dx, dy, normalized=normalized, title=title, curves=curves)
+    return plot_slope_field_prepped(X, Y, dx, dy, ax=ax, normalized=normalized, title=title, curves=curves)
 
 # code below taken from ipython cookbook
 # https://ipython-books.github.io/121-plotting-the-bifurcation-diagram-of-a-chaotic-dynamical-system/
