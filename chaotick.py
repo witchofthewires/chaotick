@@ -1,5 +1,25 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Press, 2007, p362
+# Newton-Raphson Method for finding 1D roots
+def newton_raphson(f_x, fprime_x, x_min, x_max, x_acc=0.0001, n=100):
+    guess = 0.5 * (x_max + x_min)
+    for i in range(n):
+        f = f_x(guess)
+        df = fprime_x(guess)
+        dx = f/df
+        guess -= dx
+        if guess < x_min or guess > x_max:
+            # TODO real error handling
+            print("Jumped out of bounds: %f" % guess)
+            break
+        if dx < x_acc:
+            return guess
+    print("Failed to converge, guess=%f at %d iterations" % (guess, n))
+    return 0
+
 
 def logistic_equation(X, r=1):
     return r*X*(1 - X) 
@@ -83,3 +103,7 @@ def plot_system(r, x0, n, ax=None):
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_title(f"$r={r:.1f}, \, x_0={x0:.1f}$")
+
+if __name__ == '__main__':
+    for i in range(15):
+        print("%f: %f" % (i, newton_raphson(math.sin, math.cos, 3.0, 3.5, n=i, x_acc=0.0000001)))
