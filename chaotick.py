@@ -76,6 +76,19 @@ def plot_slope_field(x_interval, y_interval, dydx, ticks=None, normalized=True, 
     dy, dx = gen_slopevals(X, Y, dydx)
     return plot_slope_field_prepped(X, Y, dx, dy, ax=ax, normalized=normalized, title=title, curves=curves)
 
+def show_axes(ax):
+    ax.axhline(y=0, color='k', linewidth=1)
+    ax.axvline(x=0, color='k', linewidth=1)
+
+def plot_line(x_interval, slope, ax=None):
+    if ax is None:
+        plot = plt.figure()
+        ax = plot.gca()
+    ax.plot(x_interval, [slope*x for x in x_interval], color='blue', linewidth=0.5)
+
+def plot_point(x, y, ax=None):
+    ax.plot(x, y, marker='o', markerfacecolor='none', markeredgecolor='blue', linestyle='-')
+
 # code below taken from ipython cookbook
 # https://ipython-books.github.io/121-plotting-the-bifurcation-diagram-of-a-chaotic-dynamical-system/
 def plot_system(r, x0, n, ax=None):
