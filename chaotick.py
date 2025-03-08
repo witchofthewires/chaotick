@@ -2,6 +2,12 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
+class FailureToConvergeException(Exception):
+    pass
+
+class NumericalFailureException(Exception):
+    pass
+
 # Press, 2007, p362
 # Newton-Raphson Method for finding 1D roots
 def newton_raphson(f_x, fprime_x, x_min, x_max, x_acc=0.0001, n=100):
@@ -12,14 +18,10 @@ def newton_raphson(f_x, fprime_x, x_min, x_max, x_acc=0.0001, n=100):
         dx = f/df
         guess -= dx
         if guess < x_min or guess > x_max:
-            # TODO real error handling
-            print("Jumped out of bounds: %f" % guess)
-            break
+            raise NumericalFailureException("Jumped out of bounds: %f" % guess)
         if dx < x_acc:
             return guess
-    print("Failed to converge, guess=%f at %d iterations" % (guess, n))
-    return 0
-
+    raise FailureToConvergeException("Failed to converge, best guess=%f" % (guess))
 
 def logistic_equation(X, r=1):
     return r*X*(1 - X) 
@@ -119,4 +121,7 @@ def plot_system(r, x0, n, ax=None):
 
 if __name__ == '__main__':
     for i in range(15):
-        print("%f: %f" % (i, newton_raphson(math.sin, math.cos, 3.0, 3.5, n=i, x_acc=0.0000001)))
+        try:
+            print("%f: %f" % (i, newton_raphson(math.sin, math.cos, 3.0, 3.5, n=i, x_acc=0.0000001)))
+        except FailureToConvergeException as e:
+            print("%f: %s" % (i, e))
