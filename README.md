@@ -6,6 +6,10 @@ A collection of routines for numerical evaluation and graphical representation o
 
 Right now, the code lives in chaotick.py, and the associated Jupyter workbook shows example use.
 
+## Animation Examples
+![an animation of a sine wave](static/RealtimePlot_ManimCE_v0.21.0.gif)
+
+
 ## Roadmap
 (from https://ocw.mit.edu/courses/18-03-differential-equations-spring-2010/resources/mit18_03s10_skills/)
 
