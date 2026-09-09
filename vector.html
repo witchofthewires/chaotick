@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Vector Manipulator</title>
+    <style>
+
+        @font-face {
+        font-family: "Computer Modern";
+        src: url('http://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunss.otf');
+        }
+
+        @font-face {
+        font-family: "Computer Modern";
+        src: url('http://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunsx.otf');
+        font-weight: bold;
+        }
+
+        @font-face {
+        font-family: "Computer Modern";
+        src: url('http://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunsi.otf');
+        font-style: italic, oblique;
+        }
+
+        @font-face {
+        font-family: "Computer Modern";
+        src: url('http://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunbxo.otf');
+        font-weight: bold;
+        font-style: italic, oblique;
+        }
+
+        body { margin: 0; overflow: hidden; background-color: #111; font-family: "Computer Modern", 'Times New Roman', Times, serif; }
+        canvas { display: block; }
+        
+        /* Styling for the LaTeX-style text overlay */
+        #coords-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 24px;
+            pointer-events: none; /* Makes sure you can click "through" it */
+            border: 1px solid #444;
+        }
+
+        /* This targets the entire GUI container and scales it up */
+        .lil-gui {
+            transform: scale(2); 
+            transform-origin: top right;
+            margin-top: 10px;
+        }
+
+        /* Optional: Adjust the width if it looks cramped after scaling */
+        .lil-gui .container {
+            width: 250px !important; 
+        }
+
+    </style>
+</head>
+<body onload="init()">
+
+<!-- LaTeX-style Coordinate Display -->
+<div id="coords-display">
+    $v = <x, y, z>$
+</div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+<script type="module">
+    // TODO looks pretty but sliders don't actually work
+    // need to make drawings match actual coordinates, not LLM math
+
+    // We use a global object so the init function (on load) can access it easily
+    window.params = {
+        magnitude: 5,
+        x: 1,
+        y: 1,
+        z: 1,
+        arrowColor: '#ff80ff'
+    };
+
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GUI } from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
+
+    // 1. SCENE SETUP
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x111111);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(8, 8, 8);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // 2. LIGHTING & GRID
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const pointLight = new THREE.PointLight(0xffffff, 50);
+    pointLight.position.set(5, 10, 5);
+    scene.add(pointLight);
+
+    const grid = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+    scene.add(grid);
+
+    // 3. THE VECTOR
+    const initialDir = new THREE.Vector3(1, 1, 1);
+    const arrowHelper = new THREE.ArrowHelper(
+        initialDir.clone().normalize(), 
+        new THREE.Vector3(0, 0, 0), 
+        5, 
+        1, 
+        0.5, 
+        0x00ffcc
+    );
+    scene.add(arrowHelper);
+
+    // 4. CONTROLS & GUI
+    const controls = new OrbitControls(camera, renderer.domElement);
+    
+    const gui = new GUI();
+    gui.add(window.params, 'magnitude', 0, 20).name('Magnitude');
+    gui.add(window.params, 'x', -10, 10).name('X Component');
+    gui.add(window.params, 'y', -10, 10).name('Y Component');
+    gui.add(window.params, 'z', -10, 10).name('Z Component');
+    gui.addColor(window.params, 'arrowColor').name('Color');
+
+    // 5. COORDINATE DISPLAY UPDATE
+    const display = document.getElementById('coords-display');
+
+    function updateDisplay() {
+        // Update the text in the HTML overlay
+        // We use .toFixed(2) to keep the numbers clean
+        display.innerHTML = `<b>v</b> = <${window.params.x.toFixed(2)}, ${window.params.y.toFixed(2)}, ${window.params.z.toFixed(2)}>`;
+    }
+
+    // 6. ANIMATION LOOP
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // Update Vector
+        const newDir = new THREE.Vector3(window.params.x, window.params.y, window.params.z);
+        arrowHelper.setDirection(newDir.clone().normalize());
+        arrowHelper.setLength(window.params.magnitude);
+        arrowHelper.setColor(window.params.arrowColor);
+
+        // Update Text
+        updateDisplay();
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    // Handle Window Resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+</script>
+</body>
+</html>
